@@ -10,8 +10,8 @@
     var avMedia = {};
     var curColors = ['red', 'green', 'blue']
 
-    captureSize = 80
-    captureRate = 20
+    captureSize = 130
+    captureRate = 30
     Object.defineProperty(avMedia,
         'captureSize', {
             get: function() {
@@ -55,6 +55,14 @@
         updateScaleFromWin();
     }
 
+    var audio = win.document.createElement('audio')
+    audio.autoplay = false
+    audio.loop = true
+    audio.src = "loop2.ogg"
+    audio.volume = 1.0
+    audio.preload = true
+    avMedia.audio = audio
+
     var element = win.document.createElement('video')
     var canvas = win.document.createElement('canvas')
     var origCanvas = win.document.createElement('canvas')
@@ -78,7 +86,7 @@
     origCanvas.style.display = 'none';
     setWH([element], 40);
     (function() {
-        var shit = [canvas, element, origCanvas]
+        var shit = [canvas, element, origCanvas, audio]
         shit.map(function(el) {
             win.document.body.appendChild(el)
         })
@@ -116,7 +124,7 @@
             }
         }
         var mode = function(col) {
-            return fullColor(col)
+            return (Math.random() > 0.5) ? fullColor(col) : fullColorOnly(col)
         }
         // prefernce to red if all same
         if (pxl.red >= pxl.green && pxl.red >= pxl.blue)
@@ -201,6 +209,9 @@
                 avMedia.startCapture();
                 unpixelateEffect(1, captureSize, 1000);
                 captureSize = 1
+                win.setTimeout(function() {
+                    audio.play()
+                }, 5300)
             };
         }
     );
