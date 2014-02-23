@@ -8,8 +8,10 @@
         return Math.round(w / cameraRatio)
     }
     var avMedia = {};
+    var curColors = ['red', 'green', 'blue']
 
-    captureSize = 200;
+    captureSize = 80
+    captureRate = 20
     Object.defineProperty(avMedia,
         'captureSize', {
             get: function() {
@@ -28,14 +30,17 @@
     avMedia.imageData = null;
     avMedia.video = null;
 
-    var unpixelateEffect = function(cur, end, rate) {
-        if (cur < end)
-            win.setTimeout(function() {
-                avMedia.captureSize = cur
-                unpixelateEffect(cur * 2, end, rate)
-            }, rate)
-        else
-            avMedia.captureSize = end
+    var unpixelateEffect = function(curo, endo, rateo) {
+        var unpixelateEffectImp = function(cur, end, rate) {
+            if (cur < end)
+                win.setTimeout(function() {
+                    avMedia.captureSize = cur
+                    unpixelateEffect(cur * 2, end, rate)
+                }, rate)
+            else
+                avMedia.captureSize = end
+        }
+        unpixelateEffectImp(curo, endo, rateo)
     }
 
     var updateScale = function(wid) {
@@ -59,6 +64,7 @@
     element.setAttribute('autoplay', '')
     win.document.body.style.margin = 0
     win.document.body.style.textAlign = 'center'
+    win.document.body.style.backgroundColor = 'black'
     element.style.position = 'absolute'
     setWH = function(els, size) {
         els.forEach(function(el) {
@@ -103,15 +109,22 @@
             return ret
         }
         var deadPixel = function() {
-            return {red: 0, blue: 0, green: 0}
+            return {
+                red: 0,
+                blue: 0,
+                green: 0
+            }
+        }
+        var mode = function(col) {
+            return fullColor(col)
         }
         // prefernce to red if all same
         if (pxl.red >= pxl.green && pxl.red >= pxl.blue)
-            return fullColorOnly('red')
+            return mode(curColors[0])
         if (pxl.green > pxl.red && pxl.green > pxl.blue)
-            return fullColorOnly('green')
+            return mode(curColors[1])
         if (pxl.blue > pxl.green && pxl.blue > pxl.red)
-            return fullColorOnly('blue')
+            return mode(curColors[2])
             // else
         return pxl;
     }
@@ -139,9 +152,9 @@
         origCtx.drawImage(element, 0, 0, captureSize, getH(captureSize));
         avMedia.imageData = rgbObjs(origCtx.getImageData(0, 0, captureSize, getH(captureSize)).data)
         drawImage(ctx, colorFillEffect(avMedia.imageData))
+        rotateColors()
 
     }
-    captureRate = 50
     Object.defineProperty(avMedia,
         'captureRate', {
             get: function() {
@@ -166,6 +179,14 @@
         }
     }
 
+    var rotateColors = function() {
+        newColors = []
+        newColors[0] = curColors[1]
+        newColors[1] = curColors[2]
+        newColors[2] = curColors[0]
+        curColors = newColors
+    }
+
     Modernizr.prefixed('getUserMedia', win.navigator)(
         // constraints
         {
@@ -178,7 +199,8 @@
             element.onloadedmetadata = function(e) {
                 // avMedia.snap();
                 avMedia.startCapture();
-                // unpixelateEffect(1, 50, 1000);
+                unpixelateEffect(1, captureSize, 1000);
+                captureSize = 1
             };
         }
     );
