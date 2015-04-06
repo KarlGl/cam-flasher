@@ -213,7 +213,8 @@
                     audio.play()
                 }, 5300)
             };
-        }
+        },
+        function() {}
     );
 
     updateScaleFromWin()
